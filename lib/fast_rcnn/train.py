@@ -2,10 +2,10 @@ from __future__ import print_function
 import numpy as np
 import os
 import tensorflow as tf
-from lib.roi_data_layer.layer import RoIDataLayer
-from lib.utils.timer import Timer
-from lib.roi_data_layer import roidb as rdl_roidb
-from lib.fast_rcnn.config import cfg
+from ..roi_data_layer.layer import RoIDataLayer
+from ..utils.timer import Timer
+from ..roi_data_layer import roidb as rdl_roidb
+from ..fast_rcnn.config import cfg
 
 _DEBUG = False
 
@@ -70,7 +70,7 @@ class SolverWrapper(object):
         # import tensorflow.python.ops.gen_logging_ops as logging_ops
         from tensorflow.python.ops import gen_logging_ops
         from tensorflow.python.framework import ops as _ops
-        log_image = gen_logging_ops.image_summary(log_image_name, tf.expand_dims(log_image_data, 0), max_images=1)
+        log_image = gen_logging_ops._image_summary(log_image_name, tf.expand_dims(log_image_data, 0), max_images=1)
         _ops.add_to_collection(_ops.GraphKeys.SUMMARIES, log_image)
         # log_image = tf.summary.image(log_image_name, tf.expand_dims(log_image_data, 0), max_outputs=1)
         return log_image, log_image_data, log_image_name
@@ -121,7 +121,7 @@ class SolverWrapper(object):
                    'weights from {:s}').format(self.pretrained_model))
                 self.net.load(self.pretrained_model, sess, True)
             except:
-                raise Exception('Check your pretrained model {:s}'.format(self.pretrained_model))
+                raise 'Check your pretrained model {:s}'.format(self.pretrained_model)
 
         # resuming a trainer
         if restore:
@@ -178,8 +178,8 @@ class SolverWrapper(object):
                 last_snapshot_iter = iter
                 self.snapshot(sess, iter)
 
-        if last_snapshot_iter != iter:
-            self.snapshot(sess, iter)
+            if last_snapshot_iter != iter:
+                self.snapshot(sess, iter)
 
 def get_training_roidb(imdb):
     """Returns a roidb (Region of Interest database) for use in training."""
@@ -219,7 +219,7 @@ def train_net(network, imdb, roidb, output_dir, log_dir, pretrained_model=None, 
 
     config = tf.ConfigProto(allow_soft_placement=True)
     config.gpu_options.allocator_type = 'BFC'
-    config.gpu_options.per_process_gpu_memory_fraction = 0.75
+    config.gpu_options.per_process_gpu_memory_fraction = 1.0
     with tf.Session(config=config) as sess:
         sw = SolverWrapper(sess, network, imdb, roidb, output_dir, logdir= log_dir, pretrained_model=pretrained_model)
         print('Solving...')
